@@ -112,7 +112,7 @@ body.exporting .block span{font-size:12px}
 @media (max-width:760px){.lower{grid-template-columns:1fr}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:8px;align-content:start}
 .panel h2{font-size:14px;margin:0}
-.tray{min-height:56px;display:flex;flex-wrap:wrap;gap:6px;padding:6px;border:1px dashed var(--line);border-radius:6px}
+.tray{min-height:56px;max-height:min(260px,40vh);overflow-y:auto;align-content:flex-start;display:flex;flex-wrap:wrap;gap:6px;padding:6px;border:1px dashed var(--line);border-radius:6px}
 .tray.over{background:var(--drop)}
 .tray .block{width:130px;margin:0}
 .tray:empty::before{content:"시간표에서 여기로 끌어 놓으면 날짜에서 빠집니다";color:var(--muted);font-size:12.5px;padding:6px}
@@ -220,7 +220,7 @@ function render(){
       if(n>1){el.style.width=`calc(${100/n}% - 6px)`;el.style.marginLeft=`calc(${100*b._lane/n}% + 3px)`}
       tt.appendChild(el)})});
   wrapEl.appendChild(tt)});
-  const tray=$('tray');tray.innerHTML='';state.blocks.filter(b=>!b.date||!range(b.period)).forEach(b=>tray.appendChild(blockEl(b,bad)));
+  const tray=$('tray');tray.innerHTML='';state.blocks.filter(b=>!b.date||!range(b.period)).sort((a,b)=>a.name.localeCompare(b.name,'ko')||a.grade-b.grade).forEach(b=>tray.appendChild(blockEl(b,bad)));
   $('clash').textContent=bad.size?`확인 필요 ${bad.size}개`:'';
   fillBulk();$('totals').innerHTML=[1,2,3].map(g=>`<span><b>${g}학년</b> ${state.blocks.filter(b=>b.date&&b.grade===g).reduce((s,b)=>s+hours(b.period),0)}시간</span>`).join('');
 }
@@ -236,6 +236,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('.x'))return;con
 document.addEventListener('pointermove',e=>{if(!drag)return;
   if(!drag.started){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<5)return;drag.started=true;
     const g=drag.el.cloneNode(true);g.className='block ghost '+drag.el.classList[1];g.style.cssText='';document.body.appendChild(g);drag.ghost=g;drag.el.classList.add('dragging');$('editor').hidden=true}
+  drag.lx=e.clientX;drag.ly=e.clientY;if(!drag.raf)autoScroll();
   drag.ghost.style.left=(e.clientX-16)+'px';drag.ghost.style.top=(e.clientY-12)+'px';
   const hit=document.elementFromPoint(e.clientX,e.clientY);
   const wk=hit&&hit.closest('[data-week]');
@@ -245,15 +246,22 @@ document.addEventListener('pointermove',e=>{if(!drag)return;
   if(!t&&hit&&hit.closest('.block')&&hit.closest('.tt')){/* over another block: find cell beneath */
     const els=document.elementsFromPoint(e.clientX,e.clientY);t=els.find(x=>x.dataset&&x.dataset.drop)||null}
   clearOver();if(wk)wk.classList.add('over');drag.target=t;
-  if(t){if(t.dataset.drop==='tray'||t.dataset.drop==='trash')t.classList.add('over');else{const b=state.blocks.find(x=>x.id===drag.id);const [k,g,p]=t.dataset.drop.split('|');const len=Math.max(1,hours(b.period));
+  if(t){if(t.dataset.drop==='tray'||t.dataset.drop==='trash')t.classList.add('over');else{const b=state.blocks.find(x=>x.id===drag.id);if(!b){clearOver();return}const [k,g,p]=t.dataset.drop.split('|');const len=Math.max(1,hours(b.period));
     for(let q=+p;q<Math.min(MAXP,+p+len-1)+1;q++){const c=document.querySelector(`[data-drop="${k}|${g}|${q}"]`);if(c)c.classList.add(q===+p?'over':'overspan')}}}
   const w=$('ttwrap').getBoundingClientRect();if(e.clientX>w.right-40)$('ttwrap').scrollLeft+=14;if(e.clientX<w.left+60)$('ttwrap').scrollLeft-=14;
 });
+function autoScroll(){if(!drag||!drag.started){if(drag)drag.raf=0;return}
+  const E=80,h=window.innerHeight,y=drag.ly;let dy=0;
+  if(y<E)dy=-Math.ceil((E-y)/5);else if(y>h-E)dy=Math.ceil((y-(h-E))/5);
+  const tr=$('tray').getBoundingClientRect();
+  if(drag.lx>=tr.left&&drag.lx<=tr.right&&y>=tr.top&&y<=tr.bottom){if(y<tr.top+30)$('tray').scrollTop-=8;else if(y>tr.bottom-30)$('tray').scrollTop+=8;dy=0}
+  if(dy)window.scrollBy(0,dy);
+  drag.raf=requestAnimationFrame(autoScroll)}
 function moveTo(b,k,g,p){const len=Math.max(1,hours(b.period));let s=p,e=p+len-1;if(e>MAXP){e=MAXP;s=Math.max(1,MAXP-len+1)}return {date:k,grade:g,period:pstr(s,e)}}
-function endDrag(cancel){if(!drag)return;const d=drag;drag=null;if(wkTimer){clearTimeout(wkTimer);wkTimer=null}clearOver();
+function endDrag(cancel){if(!drag)return;const d=drag;drag=null;if(d.raf)cancelAnimationFrame(d.raf);if(wkTimer){clearTimeout(wkTimer);wkTimer=null}clearOver();
   if(!d.started){if(!cancel)openEditor(d.id);return}
-  d.ghost.remove();d.el.classList.remove('dragging');if(cancel||!d.target)return;
-  const b=state.blocks.find(x=>x.id===d.id);const v=d.target.dataset.drop;
+  d.ghost.remove();d.el.classList.remove('dragging');if(d.lx!=null){const hit=document.elementsFromPoint(d.lx,d.ly).find(x=>x.dataset&&x.dataset.drop);if(hit)d.target=hit}if(cancel||!d.target)return;
+  const b=state.blocks.find(x=>x.id===d.id);if(!b)return;const v=d.target.dataset.drop;
   if(v==='trash'){removeBlock(b.id);return}
   if(v==='tray'){if(b.date)commit(()=>{b.date=null});return}
   const [k,gs,ps]=v.split('|');const g=+gs,p=+ps;const nx=moveTo(b,k,g,p);
