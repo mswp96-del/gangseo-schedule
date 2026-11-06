@@ -143,7 +143,7 @@ const API_URL='https://script.google.com/macros/s/AKfycbxG65l6HarrqfvWun13SER5qu
 const TITLE=document.title;
 let state=JSON.parse(document.getElementById('plan-data').textContent);
 let history=[],dirty=false,week=1;
-const NOTES={'2026-12-01':'검사지 도착','2026-12-25':'성탄절','2026-12-29':'신연제','2026-12-30':'신연제','2027-01-01':'신정','2027-01-07':'졸업식·종업식(예정)','2027-01-08':'방학식(예정)'};
+const NOTES={'2026-12-01':'검사지 도착','2026-12-25':'성탄절','2026-12-30':'신연제','2027-01-01':'신정','2027-01-07':'졸업식·종업식(예정)','2027-01-08':'방학식(예정)'};
 const HOL=new Set(['2026-12-25','2027-01-01']);
 const DOW=['월','화','수','목','금'];const MAXP=7;
 const START=Date.UTC(2026,10,30);
