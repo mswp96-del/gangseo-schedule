@@ -72,7 +72,8 @@ h1{font:700 26px/1.25 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:
 .pn.exp{background:var(--exp);color:var(--exp-ink)}.pn.lec{background:var(--lec);color:var(--lec-ink)}.pn.etc{background:var(--etc);color:var(--etc-ink)}
 .meta{font-size:13px;color:var(--muted)}
 .meta b{color:var(--ink);font-weight:600}
-.meta a{color:var(--accent);font-weight:600}
+.meta a{color:var(--accent);font-weight:600;white-space:nowrap}
+.ct{color:var(--ink)}.nonum{color:var(--muted)}
 ul.tk{list-style:none;margin:0;padding:0}
 ul.tk li{display:flex;align-items:flex-start;gap:8px;padding:5px 0}
 ul.tk label{display:flex;align-items:flex-start;gap:10px;flex:1;cursor:pointer;min-width:0}
@@ -141,8 +142,29 @@ function programs(blocks){
     const places=[...new Set(s.map(b=>String(b.place||'').trim()).filter(Boolean))];
     const slots=[...new Set(s.map(b=>`${b.grade}학년 ${b.period||''}`.trim()))];
     const phone=(f.name+' '+places.join(' ')).match(/0\d{1,2}-\d{3,4}-\d{4}/);
-    return {name:f.name,type:['exp','lec','etc'].includes(f.type)?f.type:'etc',date:f.date||null,places,slots,place:places.join(', '),phone:phone?phone[0]:''};
+    const contact=CONTACTS.find(c=>c[0].test(f.name))||null;let place=places.join(', ');if(contact)place=place.replace(/\s*·\s*[^·,]*0\d{1,2}-\d{3,4}-\d{4}/g,'').trim();
+    return {name:f.name,type:['exp','lec','etc'].includes(f.type)?f.type:'etc',date:f.date||null,places,slots,place,phone:phone?phone[0]:'',contact};
   }).sort((a,b)=>(a.date||'9')<(b.date||'9')?-1:(a.date||'9')>(b.date||'9')?1:a.name.localeCompare(b.name,'ko'));
+}
+/* 강사·업체 연락처: [프로그램 이름 패턴, 기관, 담당자, 전화] — 예산표·협의자료·메일 기준(2026-11-22) */
+const CONTACTS=[
+ [/삼국시대/,'한국로봇융합연구원 로봇AI교육혁신센터','이나경 연구원',['054-480-0710']],
+ [/진로.?진학 특강/,'춘천교육지원청','박견우 진학전문지원관',[]],
+ [/SDGs|사자가/,'사자가온다㈜','',['010-7767-5086','070-7749-0105']],
+ [/전통음식|계절음식/,'㈜춘천1004치유농장','',['010-4916-1098']],
+ [/친구야/,'해오름심리상담발달센터','김리원 대표',['070-8211-3328','010-2370-2106']],
+ [/바이오 ?JOB|진로 ?찾아 ?DREAM|사람책/,'춘천시청소년수련관 청소년활동사업팀','박미란 팀장',['033-244-1388','010-2616-9713']],
+ [/진로DAY/,'춘천인재육성장학재단','',[]],
+ [/종이접기/,'공학종이접기연구소','강경호 강사 (보조 이정순)',[]],
+ [/걱정인형|캘리그라피/,'아틀리에 봄','김희진 강사',['010-9135-7458','033-252-7458']],
+ [/조향사/,'향기놀이터','',['033-251-5145']],
+ [/AI 진로캠프|제일에듀스|제일교육/,'제일에듀스(제일교육)','곽제일 대표',['044-862-5727']],
+ [/물레/,'춘천진로체험지원센터(도예가 체험 연계)','',['033-244-1387']]
+];
+function contactHtml(p){
+  const c=p.contact;
+  if(!c)return p.phone?` · <a href="tel:${p.phone}">${p.phone}</a>`:'';
+  return ` · <span class="ct">☎ ${esc(c[1])}${c[2]?' '+esc(c[2]):''}${c[3].length?' '+c[3].map(n=>`<a href="tel:${n}">${n}</a>`).join(' / '):' <span class="nonum">(번호 미확인)</span>'}</span>`;
 }
 const MODES={tutor:'외부 강사',firm:'업체 진행',out:'교외 체험',self:'교내 교사 진행'};
 function guess(p){
@@ -222,7 +244,7 @@ function progHead(p,today,withDate){
   const rel=p.date?(p.date===today?'오늘 행사':gap(p.date,today)===1?'내일 행사':'행사 '+short(p.date)):'날짜 미정';
   return `<div class="gh"><span class="pn ${p.type}">${esc(p.name)}</span>`+
     `<span class="meta">${withDate?`<b>${esc(rel)}</b> · `:''}${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}`+
-    `${p.phone?` · <a href="tel:${p.phone}">${p.phone}</a>`:''}${st.memo[p.name]?` · ${esc(st.memo[p.name])}`:''}</span></div>`;
+    `${contactHtml(p)}${st.memo[p.name]?` · ${esc(st.memo[p.name])}`:''}</span></div>`;
 }
 function row(t,opt){
   const on=isDone(t);
@@ -265,7 +287,7 @@ function viewProg(today){
   return progs.filter(p=>p.date).map(p=>{
     const dn=p.tasks.filter(isDone).length;
     return `<section class="prog"><div class="top"><span class="pn ${p.type}">${esc(p.name)}</span>`+
-      `<span class="meta"><b>${long(p.date)}</b> · ${dday(p.date,today)} · ${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}</span>`+
+      `<span class="meta"><b>${long(p.date)}</b> · ${dday(p.date,today)} · ${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}${contactHtml(p)}</span>`+
       `<span class="meta" style="margin-left:auto">${dn}/${p.tasks.length} 완료</span></div>`+
       `<div class="ctl"><select data-mode="${p.i}" aria-label="진행 방식">${Object.keys(MODES).map(m=>`<option value="${m}"${m===p.mode?' selected':''}>${MODES[m]}</option>`).join('')}</select>`+
       `<input class="memo" type="text" data-memo="${p.i}" value="${esc(st.memo[p.name]||'')}" placeholder="메모 (강사 이름·연락처 등)" aria-label="${esc(p.name)} 메모"></div>`+
