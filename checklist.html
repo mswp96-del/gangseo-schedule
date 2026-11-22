@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>강서중 학년말 전날 체크 현황판</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#F3F5F8;--surface:#FFFFFF;--line:#D5DBE4;--line2:#E7EBF1;--ink:#1B2330;--muted:#5E6878;--accent:#23406E;--on-accent:#FFFFFF;
+  --exp:#DDF0CF;--exp-ink:#2F5A1C;--lec:#D7E5F7;--lec-ink:#1E4479;--etc:#FBE3C8;--etc-ink:#7A4512;
+  --warn:#C8372D;--warn-bg:#FCEBE9;--today:#FFF6D6;--today-line:#E2B93B;--done:#8B95A5;--ok:#2F7D4F;
+  --f-display:"Gowun Batang",serif;--f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12161D;--surface:#1A2029;--line:#2E3745;--line2:#242B36;--ink:#E7ECF3;--muted:#9AA5B5;--accent:#8FB4EE;--on-accent:#10161F;
+  --exp:#24391B;--exp-ink:#BFE3A6;--lec:#1B2E4A;--lec-ink:#B5D0F5;--etc:#40290F;--etc-ink:#F3C894;
+  --warn:#F0877E;--warn-bg:#3A1D1A;--today:#33290C;--today-line:#B8932B;--done:#6F7A8B;--ok:#7CCB9A;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 64px}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font:700 26px/1.25 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--done)}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--warn)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.tile .lab{font-size:12.5px;color:var(--muted);font-weight:500}
+.tile .num{font:500 26px/1.2 var(--f-mono);margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .num small{font-size:14px;color:var(--muted)}
+.tile .txt{font-weight:600;font-size:15.5px;margin-top:4px;overflow-wrap:anywhere}
+.tile .hint{font-size:12.5px;color:var(--muted);margin-top:2px}
+.tile.alert{border-color:var(--warn)}.tile.alert .num{color:var(--warn)}
+.bar{height:6px;border-radius:3px;background:var(--line2);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+
+.nav{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.tabs button{border:0;background:none;padding:8px 16px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected=true]{background:var(--accent);color:var(--on-accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;color:var(--muted);font-weight:500}
+.chip[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.dcard>h2{margin:0;padding:11px 16px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font:700 18px/1.3 var(--f-display);border-bottom:1px solid var(--line2)}
+.dcard>h2 .dd{font:500 12.5px var(--f-mono);padding:2px 8px;border-radius:6px;background:var(--line2);color:var(--muted)}
+.dcard>h2 .cnt{margin-left:auto;font:500 13px var(--f-body);color:var(--muted);font-variant-numeric:tabular-nums}
+.dcard>h2 .memo{font:500 13px var(--f-body);color:var(--muted)}
+.dcard.today{border-color:var(--today-line);box-shadow:0 0 0 2px var(--today-line)}
+.dcard.today>h2{background:var(--today)}
+.dcard.today>h2 .dd{background:var(--today-line);color:#1B2330}
+.dcard.late{border-color:var(--warn)}
+.dcard.late>h2{background:var(--warn-bg);color:var(--warn)}
+.dcard.alldone>h2{color:var(--done)}
+.grp{padding:10px 16px 6px;border-bottom:1px solid var(--line2)}
+.grp:last-child{border-bottom:0}
+.gh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-bottom:4px}
+.pn{font-weight:700;font-size:14.5px;padding:2px 9px;border-radius:6px;overflow-wrap:anywhere}
+.pn.exp{background:var(--exp);color:var(--exp-ink)}.pn.lec{background:var(--lec);color:var(--lec-ink)}.pn.etc{background:var(--etc);color:var(--etc-ink)}
+.meta{font-size:13px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.meta a{color:var(--accent);font-weight:600}
+ul.tk{list-style:none;margin:0;padding:0}
+ul.tk li{display:flex;align-items:flex-start;gap:8px;padding:5px 0}
+ul.tk label{display:flex;align-items:flex-start;gap:10px;flex:1;cursor:pointer;min-width:0}
+ul.tk input[type=checkbox]{width:19px;height:19px;margin:2px 0 0;accent-color:var(--accent);flex:none;cursor:pointer}
+.tg{flex:none;font-size:12px;font-weight:700;padding:1px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted);margin-top:1px;min-width:52px;text-align:center}
+.tg.call{border-color:#2E7D6B;color:#2E7D6B}.tg.sign{border-color:#B0611A;color:#B0611A}.tg.doc{border-color:#6A4BB0;color:#6A4BB0}
+@media (prefers-color-scheme:dark){.tg.call{border-color:#6FCFB8;color:#6FCFB8}.tg.sign{border-color:#EBA868;color:#EBA868}.tg.doc{border-color:#B8A2F0;color:#B8A2F0}}
+.tt{min-width:0;overflow-wrap:anywhere}
+.tt .d{color:var(--muted);font-size:13px}
+.tt .when{font:500 12px var(--f-mono);color:var(--muted);margin-left:6px;white-space:nowrap}
+li.on .tt{color:var(--done);text-decoration:line-through}
+li.on .tg{opacity:.5}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:6px;font-size:16px;line-height:1}
+.x:hover{color:var(--warn);background:var(--warn-bg)}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;color:var(--muted);margin-bottom:12px}
+.empty b{color:var(--ink)}
+.sec{font:700 15px var(--f-body);color:var(--muted);margin:22px 2px 8px}
+
+.prog{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;padding:12px 16px}
+.prog .top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:6px}
+.prog .ctl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.prog select,.prog input[type=text]{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 9px;font-size:13.5px;min-width:0}
+.prog input.memo{flex:1 1 220px}
+.prog form{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.prog form input[type=text]{flex:1 1 180px}
+.link{border:0;background:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;text-decoration:underline}
+footer{margin-top:26px;color:var(--muted);font-size:13px;line-height:1.7}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,1fr)}h1{font-size:22px}.dcard>h2{font-size:16.5px}}
+@media print{body{background:#fff}.tools,.nav,.x,.prog form,.prog .ctl,footer{display:none!important}.dcard,.prog{break-inside:avoid;border-color:#999}.wrap{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script type="application/json" id="plan-data">{"blocks": [{"id": "b2", "name": "표준화 심리검사", "type": "etc", "grade": 1, "date": "2026-12-15", "period": "7교시", "place": "각 교실"}, {"id": "b3", "name": "표준화 심리검사", "type": "etc", "grade": 3, "date": "2026-12-15", "period": "7교시", "place": "각 교실"}, {"id": "b4", "name": "찾아가는 진로DAY", "type": "exp", "grade": 2, "date": "2026-12-18", "period": "1~4교시", "place": "컴퓨터실"}, {"id": "b11", "name": "사람책도서관", "type": "lec", "grade": 1, "date": "2026-12-22", "period": "5~6교시", "place": "학년 교실, 특별실"}, {"id": "b12", "name": "사람책도서관", "type": "lec", "grade": 2, "date": "2026-12-22", "period": "5~6교시", "place": "도서관/3학년 교실"}, {"id": "b13", "name": "사람책도서관", "type": "lec", "grade": 3, "date": "2026-12-22", "period": "5~6교시", "place": "도서관/3학년 교실"}, {"id": "b23", "name": "공학적 종이접기", "type": "exp", "grade": 1, "date": "2026-12-24", "period": "3~4교시", "place": "각 교실"}, {"id": "b24", "name": "공학적 종이접기", "type": "exp", "grade": 2, "date": "2026-12-24", "period": "5~6교시", "place": "각 교실"}, {"id": "b25", "name": "공학적 종이접기", "type": "exp", "grade": 3, "date": "2026-12-24", "period": "1~2교시", "place": "각 교실"}, {"id": "b26", "name": "캘리그라피", "type": "exp", "grade": 2, "date": "2026-12-15", "period": "5~6교시", "place": "각 교실"}, {"id": "b47", "name": "지역사회 탐방(영화 관람)", "type": "exp", "grade": 1, "date": "2026-12-23", "period": "1~4교시", "place": "메가박스 남춘천점 외"}, {"id": "b48", "name": "지역사회 탐방(영화 관람)", "type": "exp", "grade": 2, "date": "2026-12-23", "period": "1~4교시", "place": "메가박스 남춘천점 외"}, {"id": "b49", "name": "지역사회 탐방(영화 관람)", "type": "exp", "grade": 3, "date": "2026-12-23", "period": "1~4교시", "place": "메가박스 남춘천점 외"}, {"id": "p1", "name": "파티시에 체험", "type": "exp", "grade": 3, "date": "2026-12-22", "period": "2교시", "place": "가정실습실"}, {"id": "p2", "name": "파티시에 체험", "type": "exp", "grade": 2, "date": "2026-12-22", "period": "3교시", "place": "가정실습실"}, {"id": "z1", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 1, "date": "2026-12-01", "period": "4교시", "place": "각 교실"}, {"id": "z2", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 2, "date": "2026-12-01", "period": "3교시", "place": "각 교실"}, {"id": "z3", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 3, "date": "2026-12-01", "period": "2교시", "place": "각 교실 （진료교사）"}, {"id": "a3", "name": "조향사 체험", "type": "exp", "grade": 2, "date": "2026-12-28", "period": "1~2교시", "place": "특별실"}, {"id": "bmw4gep0s0", "name": "나만의 쿠키 만들기", "type": "exp", "grade": 1, "date": "2026-12-24", "period": "1~2교시", "place": ""}, {"id": "bmw4gep0s1", "name": "나만의 쿠키 만들기", "type": "exp", "grade": 2, "date": "2026-12-24", "period": "3~4교시", "place": ""}, {"id": "bmw4gep0s2", "name": "나만의 쿠키 만들기", "type": "exp", "grade": 3, "date": "2026-12-24", "period": "5~6교시", "place": ""}, {"id": "b1", "name": "표준화 심리검사", "type": "etc", "grade": 2, "date": "2026-12-15", "period": "7교시", "place": "각 교실"}, {"id": "bmw8siv2e0", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 1, "date": "2026-12-08", "period": "4교시", "place": ""}, {"id": "bmw8siv2e1", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 2, "date": "2026-12-08", "period": "3교시", "place": ""}, {"id": "bmw8skhod", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 2, "date": "2026-12-15", "period": "3교시", "place": ""}, {"id": "bmw8skue5", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 2, "date": "2026-12-29", "period": "3교시", "place": ""}, {"id": "bmw8skzh0", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 1, "date": "2026-12-29", "period": "4교시", "place": ""}, {"id": "bmw8sl19x", "name": "비즈쿨（기업가 정신 함양）", "type": "lec", "grade": 1, "date": "2026-12-15", "period": "4교시", "place": ""}, {"id": "bmw8sl6ed", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 3, "date": "2026-12-29", "period": "2교시", "place": "각 교실 （진료교사）"}, {"id": "bmw8sla1w", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 3, "date": "2026-12-08", "period": "2교시", "place": "각 교실 （진료교사）"}, {"id": "bmw8slby5", "name": "비즈쿨(주1회·4주)", "type": "lec", "grade": 3, "date": "2026-12-15", "period": "2교시", "place": "각 교실 （진료교사）"}, {"id": "bmwbd27xg0", "name": "도박예방 뮤지컬", "type": "exp", "grade": 1, "date": "2027-01-04", "period": "6교시", "place": ""}, {"id": "bmwbd27xg1", "name": "도박예방 뮤지컬", "type": "exp", "grade": 2, "date": "2027-01-04", "period": "6교시", "place": ""}, {"id": "bmwbd27xg2", "name": "도박예방 뮤지컬", "type": "exp", "grade": 3, "date": "2027-01-04", "period": "6교시", "place": ""}, {"id": "bmwbink7k0", "name": "디지털리터러시 중독예방교육", "type": "lec", "grade": 1, "date": "2026-12-03", "period": "6~7교시", "place": ""}, {"id": "bmwbink7k1", "name": "디지털리터러시 중독예방교육", "type": "lec", "grade": 2, "date": "2026-12-03", "period": "6~7교시", "place": ""}, {"id": "bmwbink7k2", "name": "디지털리터러시 중독예방교육", "type": "lec", "grade": 3, "date": "2026-12-03", "period": "6~7교시", "place": ""}, {"id": "bmwbm09r40", "name": "2학년 2회고사", "type": "etc", "grade": 2, "date": null, "period": "1~4교시", "place": ""}, {"id": "bmwbm0e7m", "name": "2학년 2회고사", "type": "etc", "grade": 2, "date": null, "period": "1~4교시", "place": ""}, {"id": "bmwbm0fya", "name": "2학년 2회고사", "type": "etc", "grade": 2, "date": null, "period": "1~4교시", "place": ""}, {"id": "bmwbm1b310", "name": "전통음식체험", "type": "exp", "grade": 1, "date": "2026-12-16", "period": "1~2교시", "place": ""}, {"id": "bmwbm1b311", "name": "전통음식체험", "type": "exp", "grade": 2, "date": "2026-12-16", "period": "3~4교시", "place": ""}, {"id": "bmwbm1b312", "name": "전통음식체험", "type": "exp", "grade": 3, "date": "2026-12-16", "period": "5~6교시", "place": ""}, {"id": "bmwd4kfoz0", "name": "진로 찾아 DREAM", "type": "exp", "grade": 3, "date": "2026-12-21", "period": "2~3교시", "place": ""}, {"id": "bmwd4kfoz1", "name": "진로 찾아 DREAM", "type": "exp", "grade": 2, "date": "2026-12-21", "period": "2~3교시", "place": ""}, {"id": "bmwd4kfoz2", "name": "진로 찾아 DREAM", "type": "exp", "grade": 1, "date": "2026-12-21", "period": "2~3교시", "place": ""}, {"id": "bmwd4m2kg0", "name": "‘바이오 JOB GO’", "type": "exp", "grade": 1, "date": "2026-12-17", "period": "5~6교시", "place": ""}, {"id": "bmwd4m2kg1", "name": "‘바이오 JOB GO’", "type": "exp", "grade": 2, "date": "2026-12-17", "period": "5~6교시", "place": ""}, {"id": "bmwd4m2kg2", "name": "‘바이오 JOB GO’", "type": "exp", "grade": 3, "date": "2026-12-17", "period": "5~6교시", "place": ""}, {"id": "bmwe98w9p0", "name": "학년말 진로·진학 특강", "type": "lec", "grade": 1, "date": "2026-12-03", "period": "4교시", "place": ""}, {"id": "bmwe98w9p1", "name": "학년말 진로·진학 특강", "type": "lec", "grade": 2, "date": "2026-12-03", "period": "4교시", "place": ""}, {"id": "bmwe98w9p2", "name": "학년말 진로·진학 특강", "type": "lec", "grade": 3, "date": "2026-12-03", "period": "4교시", "place": ""}, {"id": "plan-ai1", "name": "AI 진로캠프(제일에듀스)", "type": "exp", "grade": 1, "date": "2026-12-31", "period": "1~4교시", "place": "각 교실 · 제일에듀스 044-862-5727"}, {"id": "plan-ai2", "name": "AI 진로캠프(제일에듀스)", "type": "exp", "grade": 2, "date": "2026-12-31", "period": "1~4교시", "place": "각 교실 · 제일에듀스 044-862-5727"}, {"id": "plan-ai3", "name": "AI 진로캠프(제일에듀스)", "type": "exp", "grade": 3, "date": "2026-12-31", "period": "1~4교시", "place": "각 교실 · 제일에듀스 044-862-5727"}, {"id": "plan-sdg1", "name": "K-SDGs 진로 캠프(사자가 온다)", "type": "exp", "grade": 1, "date": "2026-12-14", "period": "1~4교시", "place": "각 교실 · 사자가온다 010-7767-5086"}, {"id": "plan-sdg2", "name": "K-SDGs 진로 캠프(사자가 온다)", "type": "exp", "grade": 2, "date": "2026-12-14", "period": "1~4교시", "place": "각 교실 · 사자가온다 010-7767-5086"}, {"id": "plan-sdg3", "name": "K-SDGs 진로 캠프(사자가 온다)", "type": "exp", "grade": 3, "date": "2026-12-14", "period": "1~4교시", "place": "각 교실 · 사자가온다 010-7767-5086"}, {"id": "bmwli0cfs0", "name": "친구야?친구야!(관계개선 프로그램)", "type": "etc", "grade": 1, "date": "2026-12-17", "period": "1~2교시", "place": ""}, {"id": "bmwli0cfs1", "name": "친구야?친구야!(관계개선 프로그램)", "type": "etc", "grade": 2, "date": "2026-12-17", "period": "3~4교시", "place": ""}, {"id": "bmwlvth780", "name": "걱정인형 키링 만들기", "type": "exp", "grade": 1, "date": "2026-12-24", "period": "5~6교시", "place": ""}, {"id": "bmwlvth781", "name": "걱정인형 키링 만들기", "type": "exp", "grade": 2, "date": "2026-12-24", "period": "1~2교시", "place": ""}, {"id": "bmwlvth782", "name": "걱정인형 키링 만들기", "type": "exp", "grade": 3, "date": "2026-12-24", "period": "3~4교시", "place": ""}, {"id": "bmwlvwfzu0", "name": "조향사 체험", "type": "exp", "grade": 3, "date": "2026-12-28", "period": "5~6교시", "place": ""}, {"id": "bmwlvwfzu1", "name": "조향사 체험", "type": "exp", "grade": 1, "date": "2026-12-28", "period": "3~4교시", "place": ""}, {"id": "bmwmtzxr00", "name": "삼국시대 문화재를 인공지능으로 만나는 역사탐혐", "type": "exp", "grade": 1, "date": "2026-12-02", "period": "3~6교시", "place": ""}, {"id": "bmwmtzxr81", "name": "삼국시대 문화재를 인공지능으로 만나는 역사탐혐", "type": "exp", "grade": 2, "date": "2026-12-28", "period": "3~6교시", "place": ""}, {"id": "bmwmtzxr82", "name": "삼국시대 문화재를 인공지능으로 만나는 역사탐혐", "type": "exp", "grade": 3, "date": "2026-12-02", "period": "3~6교시", "place": ""}, {"id": "bmwn3qac5", "name": "파티시에 체험", "type": "exp", "grade": 1, "date": "2026-12-22", "period": "4교시", "place": "가정실습실"}, {"id": "bmwo6mn4g", "name": "캘리그라피", "type": "exp", "grade": 1, "date": "2026-12-15", "period": "1~2교시", "place": "각 교실"}, {"id": "bmwo7xsx6", "name": "캘리그라피", "type": "exp", "grade": 3, "date": "2026-12-15", "period": "3~4교시", "place": "각 교실"}]}</script>
+<script>
+/* 일정판(index.html)과 같은 구글 시트를 읽어, 행사 전에 챙길 일을 날짜별로 만든다. */
+const API_URL='https://script.google.com/macros/s/AKfycbxG65l6HarrqfvWun13SER5qu28QZG1a2DT60fdzAReNWBCSsjCwrTLwAF68kphOc2z/exec';
+(function(){
+const HOL=new Set(['2026-12-25','2027-01-01']);
+const NOTES={'2026-12-01':'검사지 도착','2026-12-25':'성탄절','2026-12-30':'신연제','2027-01-01':'신정','2027-01-06':'졸업식·종업식','2027-01-07':'방학식'};
+const LS='gs-check-v1',LSB='gs-check-blocks';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const D=k=>new Date(k+'T00:00:00Z');
+const iso=t=>t.toISOString().slice(0,10);
+const pad=n=>String(n).padStart(2,'0');
+function todayK(){const q=new URLSearchParams(location.search).get('today');if(/^\d{4}-\d\d-\d\d$/.test(q||''))return q;const n=new Date();return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`}
+const isSchool=k=>{const w=D(k).getUTCDay();return w>0&&w<6&&!HOL.has(k)};
+function shift(k,n){let t=D(k).getTime(),left=Math.abs(n);const step=n<0?-864e5:864e5;while(left){t+=step;if(isSchool(iso(new Date(t))))left--}return iso(new Date(t))}
+const long=k=>{const t=D(k);return `${t.getUTCMonth()+1}월 ${t.getUTCDate()}일 (${'일월화수목금토'[t.getUTCDay()]})`};
+const short=k=>{const t=D(k);return `${t.getUTCMonth()+1}/${t.getUTCDate()}(${'일월화수목금토'[t.getUTCDay()]})`};
+const gap=(a,b)=>Math.round((D(a)-D(b))/864e5);
+function dday(k,today){const n=gap(k,today);return n===0?'오늘':n===1?'내일':n>1?`D-${n}`:`${-n}일 지남`}
+
+/* ── 저장: 체크·숨김·추가 항목·메모는 이 브라우저에 보관 ── */
+let mem={};
+function load(){try{mem=JSON.parse(localStorage.getItem(LS))||{}}catch(_){mem=mem||{}}for(const k of ['done','hide','add','mode','memo'])mem[k]=mem[k]||{};return mem}
+function save(){try{localStorage.setItem(LS,JSON.stringify(st))}catch(_){}}
+let st=load();
+
+/* ── 일정 → 프로그램 묶음 ── */
+function programs(blocks){
+  const m=new Map();
+  blocks.forEach(b=>{if(!b||!b.name)return;const key=(b.date||'')+'|'+b.name;if(!m.has(key))m.set(key,[]);m.get(key).push(b)});
+  return [...m.values()].map(l=>{
+    const f=l[0];const s=l.slice().sort((a,b)=>a.grade-b.grade||String(a.period).localeCompare(String(b.period)));
+    const places=[...new Set(s.map(b=>String(b.place||'').trim()).filter(Boolean))];
+    const slots=[...new Set(s.map(b=>`${b.grade}학년 ${b.period||''}`.trim()))];
+    const phone=(f.name+' '+places.join(' ')).match(/0\d{1,2}-\d{3,4}-\d{4}/);
+    return {name:f.name,type:['exp','lec','etc'].includes(f.type)?f.type:'etc',date:f.date||null,places,slots,place:places.join(', '),phone:phone?phone[0]:''};
+  }).sort((a,b)=>(a.date||'9')<(b.date||'9')?-1:(a.date||'9')>(b.date||'9')?1:a.name.localeCompare(b.name,'ko'));
+}
+const MODES={tutor:'외부 강사',firm:'업체 진행',out:'교외 체험',self:'교내 교사 진행'};
+function guess(p){
+  const txt=p.name+' '+p.place;
+  if(/검사|고사|시험/.test(p.name))return 'self';
+  if(/교사\s*[）)]|담임/.test(txt))return 'self';
+  if(/메가박스|농장|공방|고등학교|대학교|박물관|과학관|케이블카|견학|탐방|관람/.test(txt))return 'out';
+  if(p.phone)return 'firm';
+  return 'tutor';
+}
+const T={
+ tutor:[
+  {k:'doc1',kind:'doc',off:-5,once:'first',t:'강사카드(이력서)·강의계획서 받기'},
+  {k:'doc2',kind:'doc',off:-5,once:'first',t:'통장 사본·신분증 사본 받기',d:'강사수당 지급용'},
+  {k:'doc3',kind:'doc',off:-5,once:'first',t:'성범죄·아동학대 범죄경력 조회 동의서 받기'},
+  {k:'call',kind:'call',off:-1,t:'강사 전화 확인',d:'도착 시각·인원·준비물·주차'},
+  {k:'sign',kind:'sign',off:-1,t:'안내판 부착',d:'현관, {place} 앞'},
+  {k:'room',kind:'room',off:-1,t:'장소·기자재 점검',d:'빔프로젝터·마이크·책상 배치'},
+  {k:'note',kind:'note',off:-1,t:'교사·학생 안내',d:'시간표 변경·장소·준비물'},
+  {k:'day',kind:'day',off:0,t:'강사 맞이·사진 촬영·강사 확인 서명 받기'},
+  {k:'pay',kind:'after',off:1,once:'last',t:'강사수당 지급 품의'}],
+ firm:[
+  {k:'doc1',kind:'doc',off:-5,once:'first',t:'견적서·사업자등록증·통장 사본 받기',d:'계약·지출용'},
+  {k:'doc2',kind:'doc',off:-5,once:'first',t:'참여 강사 명단·범죄경력 조회 동의서 받기'},
+  {k:'call',kind:'call',off:-1,t:'업체 전화 확인',d:'강사 인원·도착 시각·준비물·주차'},
+  {k:'sign',kind:'sign',off:-1,t:'안내판 부착',d:'현관, {place} 앞'},
+  {k:'room',kind:'room',off:-1,t:'장소·기자재 점검',d:'빔프로젝터·마이크·책상 배치'},
+  {k:'note',kind:'note',off:-1,t:'교사·학생 안내',d:'시간표 변경·장소·준비물'},
+  {k:'day',kind:'day',off:0,t:'강사 맞이·사진 촬영'},
+  {k:'pay',kind:'after',off:1,once:'last',t:'거래명세서·세금계산서 받아 대금 지급 품의'}],
+ out:[
+  {k:'doc1',kind:'doc',off:-5,once:'first',t:'체험처 견적서·사업자등록증·통장 사본 받기'},
+  {k:'doc2',kind:'doc',off:-5,once:'first',t:'버스 배차 확인서 받기',d:'차량 이용 시'},
+  {k:'call',kind:'call',off:-1,t:'체험처 전화 확인',d:'인원·도착 시각·진행 순서'},
+  {k:'bus',kind:'call',off:-1,t:'버스 배차 확인 전화',d:'출발 시각·탑승 장소'},
+  {k:'note',kind:'note',off:-1,t:'학생·인솔교사 안내',d:'집합 시각·복장·준비물'},
+  {k:'room',kind:'room',off:-1,t:'인솔 준비물 챙기기',d:'학생 명단·비상연락망·구급약'},
+  {k:'day',kind:'day',off:0,t:'출발 전 인원 점검·사진 촬영'},
+  {k:'pay',kind:'after',off:1,once:'last',t:'체험비·차량비 지급 품의'}],
+ self:[
+  {k:'note',kind:'note',off:-1,t:'담당 교사 확인',d:'시간·장소·진행 순서'},
+  {k:'room',kind:'room',off:-1,t:'자료·장소 준비'}]
+};
+const KIND={doc:'서류',call:'전화',sign:'안내판',room:'장소',note:'안내',my:'추가',day:'당일',after:'사후'};
+const KORD=Object.keys(KIND);
+const OFFS=[[-5,'일주일 전'],[-1,'전날'],[0,'당일'],[1,'다음 날']];
+
+let blocks=[],progs=[],tasks=[],live=null,stamp='';
+function build(){
+  progs=programs(blocks);tasks=[];
+  const byName={};progs.forEach(p=>{if(p.date)(byName[p.name]=byName[p.name]||[]).push(p.date)});
+  progs.forEach((p,i)=>{
+    p.i=i;p.mode=st.mode[p.name]||guess(p);p.tasks=[];p.hidden=0;
+    if(!p.date)return;
+    const ds=byName[p.name].sort();p.first=ds[0]===p.date;p.last=ds[ds.length-1]===p.date;
+    p.series=ds.length>1?`${ds.indexOf(p.date)+1}/${ds.length}회차`:'';
+    let list=T[p.mode].filter(t=>!t.once||(t.once==='first'?p.first:p.last));
+    if(p.mode!=='out'&&/쿠키|파티시에|음식|요리|베이킹|제빵/.test(p.name)){const at=list.findIndex(t=>t.k==='room');list=list.slice();list.splice(at+1,0,{k:'cook',kind:'room',off:-1,t:'재료·조리도구 확인',d:'알레르기 학생 확인'})}
+    if(/검사/.test(p.name))list=list.map(t=>t.k==='room'?{...t,t:'검사지·답안지 수량 확인'}:t);
+    (st.add[p.name]||[]).forEach(a=>list.push({k:a.id,kind:'my',off:a.off,t:a.t,custom:1}));
+    list.forEach(t=>{
+      const key=t.once?`${p.name}|${t.k}`:`${p.name}|${p.date}|${t.k}`;
+      if(st.hide[key]){p.hidden++;return}
+      const due=t.off===0?p.date:shift(p.date,t.off);
+      p.tasks.push({...t,key,due,p,d:(t.d||'').replace('{place}',p.place||'행사 장소')});
+    });
+    tasks.push(...p.tasks);
+  });
+  tasks.sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:a.p.date<b.p.date?-1:a.p.date>b.p.date?1:a.p.i-b.p.i||KORD.indexOf(a.kind)-KORD.indexOf(b.kind));
+}
+
+/* ── 화면 ── */
+const ui={tab:'date',show:'todo',kind:'all'};
+const app=document.getElementById('app');
+const isDone=t=>!!st.done[t.key];const fresh=new Set();
+function progHead(p,today,withDate){
+  const rel=p.date?(p.date===today?'오늘 행사':gap(p.date,today)===1?'내일 행사':'행사 '+short(p.date)):'날짜 미정';
+  return `<div class="gh"><span class="pn ${p.type}">${esc(p.name)}</span>`+
+    `<span class="meta">${withDate?`<b>${esc(rel)}</b> · `:''}${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}`+
+    `${p.phone?` · <a href="tel:${p.phone}">${p.phone}</a>`:''}${st.memo[p.name]?` · ${esc(st.memo[p.name])}`:''}</span></div>`;
+}
+function row(t,opt){
+  const on=isDone(t);
+  return `<li class="${on?'on':''}"><label><input type="checkbox" data-k="${esc(t.key)}"${on?' checked':''}>`+
+    `<span class="tg ${t.kind}">${KIND[t.kind]}</span><span class="tt">${esc(t.t)}${t.d?` <span class="d">— ${esc(t.d)}</span>`:''}`+
+    `${opt&&opt.when?`<span class="when">${short(t.due)}까지</span>`:''}</span></label>`+
+    `${opt&&opt.del?`<button class="x" data-del="${esc(t.key)}" data-p="${t.p.i}" data-c="${t.custom?esc(t.k):''}" aria-label="${esc(t.t)} 항목 빼기" title="이 항목 빼기">×</button>`:''}</li>`;
+}
+function dayCard(k,list,today,cls){
+  const groups=[];list.forEach(t=>{let g=groups.find(g=>g.p===t.p);if(!g)groups.push(g={p:t.p,l:[]});g.l.push(t)});
+  const dn=list.filter(isDone).length;
+  return `<section class="dcard ${cls||''} ${dn===list.length?'alldone':''}"><h2>${long(k)} <span class="dd">${dday(k,today)}</span>`+
+    `${NOTES[k]?`<span class="memo">${esc(NOTES[k])}</span>`:''}<span class="cnt">${dn}/${list.length} 완료</span></h2>`+
+    groups.map(g=>`<div class="grp">${progHead(g.p,today,true)}<ul class="tk">${g.l.map(t=>row(t)).join('')}</ul></div>`).join('')+`</section>`;
+}
+function viewDate(today){
+  const f=tasks.filter(t=>ui.kind==='all'||t.kind===ui.kind);
+  const late=f.filter(t=>t.due<today&&(!isDone(t)||fresh.has(t.key)));
+  const byDue={};f.forEach(t=>{if(ui.show==='todo'&&t.due<today)return;(byDue[t.due]=byDue[t.due]||[]).push(t)});
+  let h='';
+  if(ui.show==='todo'&&late.length){
+    const g={};late.forEach(t=>(g[t.due]=g[t.due]||[]).push(t));
+    h+=`<div class="sec">밀린 일 ${late.filter(t=>!isDone(t)).length}개</div>`+Object.keys(g).sort().map(k=>dayCard(k,g[k],today,'late')).join('');
+  }
+  const keys=Object.keys(byDue).sort();
+  if(ui.show==='todo'){
+    h+=`<div class="sec">오늘 · ${long(today)}</div>`;
+    if(byDue[today])h+=dayCard(today,byDue[today],today,'today');
+    else{const nx=keys.find(k=>k>today);h+=`<div class="empty"><b>오늘 챙길 일은 없습니다.</b>${nx?`<br>다음 체크는 ${long(nx)}, ${byDue[nx].length}개입니다.`:''}</div>`}
+    const rest=keys.filter(k=>k>today);
+    if(rest.length)h+=`<div class="sec">다가오는 날</div>`+rest.map(k=>dayCard(k,byDue[k],today)).join('');
+  }else{
+    h+=keys.length?keys.map(k=>dayCard(k,byDue[k],today,k===today?'today':(k<today&&byDue[k].some(t=>!isDone(t))?'late':''))).join(''):`<div class="empty">해당하는 항목이 없습니다.</div>`;
+  }
+  const und=progs.filter(p=>!p.date);
+  if(und.length&&ui.kind==='all')h+=`<div class="sec">날짜 미정 프로그램 ${und.length}개</div><div class="empty" style="text-align:left">${und.map(p=>`<span class="pn ${p.type}" style="display:inline-block;margin:2px 4px 2px 0">${esc(p.name)}</span>`).join('')}<br><span style="font-size:13px">일정판에서 날짜를 정하면 체크 항목이 자동으로 생깁니다.</span></div>`;
+  return h;
+}
+function viewProg(today){
+  return progs.filter(p=>p.date).map(p=>{
+    const dn=p.tasks.filter(isDone).length;
+    return `<section class="prog"><div class="top"><span class="pn ${p.type}">${esc(p.name)}</span>`+
+      `<span class="meta"><b>${long(p.date)}</b> · ${dday(p.date,today)} · ${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}</span>`+
+      `<span class="meta" style="margin-left:auto">${dn}/${p.tasks.length} 완료</span></div>`+
+      `<div class="ctl"><select data-mode="${p.i}" aria-label="진행 방식">${Object.keys(MODES).map(m=>`<option value="${m}"${m===p.mode?' selected':''}>${MODES[m]}</option>`).join('')}</select>`+
+      `<input class="memo" type="text" data-memo="${p.i}" value="${esc(st.memo[p.name]||'')}" placeholder="메모 (강사 이름·연락처 등)" aria-label="${esc(p.name)} 메모"></div>`+
+      `<ul class="tk">${p.tasks.slice().sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:0).map(t=>row(t,{when:1,del:1})).join('')}</ul>`+
+      `${p.hidden?`<button class="link" data-restore="${p.i}">뺀 항목 ${p.hidden}개 되살리기</button>`:''}`+
+      `<form data-add="${p.i}"><input type="text" name="t" placeholder="챙길 일 추가" aria-label="${esc(p.name)}에 챙길 일 추가" maxlength="80">`+
+      `<select name="off" aria-label="시점">${OFFS.map(o=>`<option value="${o[0]}"${o[0]===-1?' selected':''}>${o[1]}</option>`).join('')}</select><button class="btn" type="submit">추가</button></form></section>`;
+  }).join('')||`<div class="empty">날짜가 정해진 프로그램이 없습니다.</div>`;
+}
+function render(){
+  const today=todayK();
+  const now=tasks.filter(t=>t.due<=today&&!isDone(t));
+  const late=now.filter(t=>t.due<today).length;
+  const docs=tasks.filter(t=>t.kind==='doc');
+  const dn=tasks.filter(isDone).length;
+  const next=progs.find(p=>p.date&&p.date>=today);
+  const sameDay=next?progs.filter(p=>p.date===next.date).length:0;
+  const chip=(attr,val,cur,lab)=>`<button class="chip" ${attr}="${val}" aria-pressed="${val===cur}">${lab}</button>`;
+  app.innerHTML=`
+<header><div><h1>학년말 전날 체크 현황판</h1><p class="sub">일정판의 행사마다 미리 챙길 일을 날짜별로 보여 줍니다. 일정이 바뀌면 자동으로 따라 바뀝니다.</p></div>
+<div class="tools"><span class="sync"><i class="dot ${live===true?'ok':live===false?'err':''}"></i><span aria-live="polite">${esc(stamp)}</span></span>
+<button class="btn" id="reload">새로고침</button><a class="btn" href="./">일정판 열기</a><button class="btn" id="print">인쇄</button></div></header>
+<div class="tiles">
+ <div class="tile ${late?'alert':''}"><div class="lab">지금 할 일</div><div class="num">${now.length}<small>개</small></div><div class="hint">${late?`밀린 일 ${late}개 포함`:'오늘까지 기준'}</div></div>
+ <div class="tile"><div class="lab">다음 행사</div><div class="txt">${next?esc(next.name)+(sameDay>1?` 외 ${sameDay-1}개`:''):'없음'}</div><div class="hint">${next?`${short(next.date)} · ${dday(next.date,today)}`:''}</div></div>
+ <div class="tile"><div class="lab">받을 서류</div><div class="num">${docs.filter(isDone).length}<small>/${docs.length}</small></div><div class="hint">강사·업체에서 받은 것</div></div>
+ <div class="tile"><div class="lab">전체 진행</div><div class="num">${dn}<small>/${tasks.length}</small></div><div class="bar"><i style="width:${tasks.length?Math.round(dn/tasks.length*100):0}%"></i></div></div>
+</div>
+<div class="nav"><div class="tabs" role="tablist"><button role="tab" data-tab="date" aria-selected="${ui.tab==='date'}">날짜별</button><button role="tab" data-tab="prog" aria-selected="${ui.tab==='prog'}">프로그램별</button></div>
+${ui.tab==='date'?`<div class="chips">${chip('data-show','todo',ui.show,'할 일만')}${chip('data-show','all',ui.show,'지난 것 포함 전부')}<span style="width:8px"></span>${chip('data-kind','all',ui.kind,'전체')}${['call','sign','doc','room','note'].map(k=>chip('data-kind',k,ui.kind,KIND[k])).join('')}</div>`:''}</div>
+<main>${ui.tab==='date'?viewDate(today):viewProg(today)}</main>
+<footer>전날 = 주말·공휴일을 건너뛴 직전 등교일, 서류는 행사 5등교일 전까지로 잡았습니다. 진행 방식(외부 강사·업체·교외 체험·교내 교사)은 프로그램 이름과 장소로 추정한 것이니 「프로그램별」에서 바꾸고, 항목을 빼거나 더할 수 있습니다.<br>체크 표시와 메모는 지금 쓰는 이 브라우저에 저장됩니다.</footer>`;
+}
+function rerender(){const y=scrollY;build();render();scrollTo(0,y)}
+
+app.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.matches('input[type=checkbox][data-k]')){if(t.checked)st.done[t.dataset.k]=Date.now();else delete st.done[t.dataset.k];fresh.add(t.dataset.k);save();rerender()}
+  else if(t.matches('select[data-mode]')){st.mode[progs[+t.dataset.mode].name]=t.value;save();rerender()}
+  else if(t.matches('input[data-memo]')){const n=progs[+t.dataset.memo].name;if(t.value.trim())st.memo[n]=t.value.trim();else delete st.memo[n];save()}
+});
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.tab){ui.tab=b.dataset.tab;render()}
+  else if(b.dataset.show){ui.show=b.dataset.show;render()}
+  else if(b.dataset.kind){ui.kind=b.dataset.kind;render()}
+  else if(b.dataset.del){const p=progs[+b.dataset.p];if(b.dataset.c){st.add[p.name]=(st.add[p.name]||[]).filter(a=>a.id!==b.dataset.c);delete st.done[b.dataset.del]}else st.hide[b.dataset.del]=1;save();rerender()}
+  else if(b.dataset.restore){const n=progs[+b.dataset.restore].name;Object.keys(st.hide).forEach(k=>{if(k.startsWith(n+'|'))delete st.hide[k]});save();rerender()}
+  else if(b.id==='reload')pull(true);
+  else if(b.id==='print')print();
+});
+app.addEventListener('submit',e=>{
+  const f=e.target.closest('form[data-add]');if(!f)return;e.preventDefault();
+  const v=f.t.value.trim();if(!v)return;const n=progs[+f.dataset.add].name;
+  (st.add[n]=st.add[n]||[]).push({id:'m'+Date.now().toString(36),t:v,off:+f.off.value});save();rerender();
+});
+
+/* ── 일정 불러오기: 시트 → 실패하면 마지막으로 받은 일정 → 그것도 없으면 페이지에 담긴 일정 ── */
+const norm=l=>l.map(b=>({...b,grade:+b.grade,date:b.date||null}));
+const hm=t=>new Date(t).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+function boot(){
+  let c=null;try{c=JSON.parse(localStorage.getItem(LSB))}catch(_){}
+  if(c&&Array.isArray(c.blocks)){blocks=norm(c.blocks);stamp='일정 불러오는 중…'}
+  else{blocks=norm(JSON.parse(document.getElementById('plan-data').textContent).blocks);stamp='일정 불러오는 중…'}
+  build();render();pull();
+}
+let busy=false;
+async function pull(manual){
+  if(busy)return;busy=true;
+  try{const r=await fetch(API_URL+'?t='+Date.now());if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j.ok||!Array.isArray(j.blocks))throw new Error('api');
+    const changed=JSON.stringify(norm(j.blocks))!==JSON.stringify(blocks);blocks=norm(j.blocks);live=true;stamp='일정판과 연결됨 · '+hm(Date.now());
+    try{localStorage.setItem(LSB,JSON.stringify({t:Date.now(),blocks:j.blocks}))}catch(_){}
+    const typing=document.activeElement&&document.activeElement.matches&&document.activeElement.matches('input[type=text]');
+    if(changed&&!typing)rerender();else if(!typing)render();
+  }catch(_){live=false;stamp='일정판에 연결하지 못해 저장된 일정으로 표시합니다';{const y=scrollY;const typing=document.activeElement&&document.activeElement.matches&&document.activeElement.matches('input[type=text]');if(!typing){render();scrollTo(0,y)}}}
+  finally{busy=false}
+}
+addEventListener('focus',()=>pull());
+setInterval(()=>{if(!document.hidden)pull()},5*60*1000);
+addEventListener('storage',e=>{if(e.key===LS){st=load();rerender()}});
+boot();
+})();
+</script>
+</body>
+</html>
