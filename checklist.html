@@ -55,8 +55,9 @@ h1{font:700 26px/1.25 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:
 .chip[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:700}
 
 .dcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
-.dcard>h2{margin:0;padding:11px 16px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font:700 18px/1.3 var(--f-display);border-bottom:1px solid var(--line2)}
-.dcard>h2 .dd{font:500 12.5px var(--f-mono);padding:2px 8px;border-radius:6px;background:var(--line2);color:var(--muted)}
+.dcard>h2{margin:0;padding:11px 16px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font:700 18px/1.3 var(--f-display);border-bottom:1px solid var(--line2)}
+.dd{font:700 19px/1.2 var(--f-body);padding:3px 11px;border-radius:8px;background:var(--accent);color:var(--on-accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.dd.sm{font-size:16px;padding:2px 9px}
 .dcard>h2 .cnt{margin-left:auto;font:500 13px var(--f-body);color:var(--muted);font-variant-numeric:tabular-nums}
 .dcard>h2 .memo{font:500 13px var(--f-body);color:var(--muted)}
 .dcard.today{border-color:var(--today-line);box-shadow:0 0 0 2px var(--today-line)}
@@ -64,6 +65,8 @@ h1{font:700 26px/1.25 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:
 .dcard.today>h2 .dd{background:var(--today-line);color:#1B2330}
 .dcard.late{border-color:var(--warn)}
 .dcard.late>h2{background:var(--warn-bg);color:var(--warn)}
+.dcard.late>h2 .dd{background:var(--warn);color:#fff}
+.dcard.alldone>h2 .dd{background:var(--line2);color:var(--muted)}
 .dcard.alldone>h2{color:var(--done)}
 .grp{padding:10px 16px 6px;border-bottom:1px solid var(--line2)}
 .grp:last-child{border-bottom:0}
@@ -287,7 +290,7 @@ function viewProg(today){
   return progs.filter(p=>p.date).map(p=>{
     const dn=p.tasks.filter(isDone).length;
     return `<section class="prog"><div class="top"><span class="pn ${p.type}">${esc(p.name)}</span>`+
-      `<span class="meta"><b>${long(p.date)}</b> · ${dday(p.date,today)} · ${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}${contactHtml(p)}</span>`+
+      `<span class="meta"><b>${long(p.date)}</b> <span class="dd sm">${dday(p.date,today)}</span> ${esc(p.slots.join(', '))}${p.place?' · '+esc(p.place):''}${p.series?' · '+p.series:''}${contactHtml(p)}</span>`+
       `<span class="meta" style="margin-left:auto">${dn}/${p.tasks.length} 완료</span></div>`+
       `<div class="ctl"><select data-mode="${p.i}" aria-label="진행 방식">${Object.keys(MODES).map(m=>`<option value="${m}"${m===p.mode?' selected':''}>${MODES[m]}</option>`).join('')}</select>`+
       `<input class="memo" type="text" data-memo="${p.i}" value="${esc(st.memo[p.name]||'')}" placeholder="메모 (강사 이름·연락처 등)" aria-label="${esc(p.name)} 메모"></div>`+
@@ -312,7 +315,7 @@ function render(){
 <button class="btn" id="reload">새로고침</button><a class="btn" href="./">일정판 열기</a><button class="btn" id="print">인쇄</button></div></header>
 <div class="tiles">
  <div class="tile ${late?'alert':''}"><div class="lab">지금 할 일</div><div class="num">${now.length}<small>개</small></div><div class="hint">${late?`밀린 일 ${late}개 포함`:'오늘까지 기준'}</div></div>
- <div class="tile"><div class="lab">다음 행사</div><div class="txt">${next?esc(next.name)+(sameDay>1?` 외 ${sameDay-1}개`:''):'없음'}</div><div class="hint">${next?`${short(next.date)} · ${dday(next.date,today)}`:''}</div></div>
+ <div class="tile"><div class="lab">다음 행사</div><div class="txt">${next?esc(next.name)+(sameDay>1?` 외 ${sameDay-1}개`:''):'없음'}</div><div class="hint">${next?`${short(next.date)} <span class="dd sm">${dday(next.date,today)}</span>`:''}</div></div>
  <div class="tile"><div class="lab">받을 서류</div><div class="num">${docs.filter(isDone).length}<small>/${docs.length}</small></div><div class="hint">강사·업체에서 받은 것</div></div>
  <div class="tile"><div class="lab">전체 진행</div><div class="num">${dn}<small>/${tasks.length}</small></div><div class="bar"><i style="width:${tasks.length?Math.round(dn/tasks.length*100):0}%"></i></div></div>
 </div>
